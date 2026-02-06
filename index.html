@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>مؤشر النشاط اليومي</title>
+
+<style>
+body{
+    margin:0;
+    font-family: "Segoe UI", Arial;
+    background: linear-gradient(to right,#74ebd5,#acb6e5);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+.app{
+    width:420px;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(6px);
+    border-radius:18px;
+    padding:25px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.25);
+}
+
+.lang{
+    text-align:right;
+}
+.lang button{
+    border:none;
+    padding:6px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    background:#4CAF50;
+    color:white;
+}
+
+h2{
+    text-align:center;
+    margin-top:5px;
+}
+
+.desc{
+    font-size:14px;
+    color:#444;
+    text-align:center;
+    margin-bottom:15px;
+}
+
+label{
+    display:block;
+    margin-top:10px;
+    font-size:14px;
+}
+
+input{
+    width:100%;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    margin-top:4px;
+}
+
+button.calc{
+    width:100%;
+    margin-top:15px;
+    padding:10px;
+    border:none;
+    border-radius:10px;
+    background:#2196F3;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.result{
+    margin-top:15px;
+    padding:12px;
+    border-radius:12px;
+    color:white;
+    text-align:center;
+    font-weight:bold;
+    display:none;
+}
+
+.advice{
+    margin-top:10px;
+    font-size:14px;
+    color:#333;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="lang">
+<button onclick="toggleLang()">AR / EN</button>
+</div>
+
+<h2 id="title">مؤشر النشاط اليومي</h2>
+
+<p class="desc" id="desc">
+نستخدم الرياضيات لقياس صحتنا اليومية بطريقة ذكية اعتمادًا على العمر والنشاط.
+</p>
+
+<label id="l_age">العمر (سنة)</label>
+<input type="number" id="age" min="7" max="60">
+
+<label id="l_walk">المشي اليومي (بالمتر)</label>
+<input type="number" id="walk">
+
+<label id="l_water">عدد أكواب الماء</label>
+<input type="number" id="water">
+
+<label id="l_sleep">عدد ساعات النوم</label>
+<input type="number" id="sleep">
+
+<button class="calc" onclick="calculate()" id="calcBtn">احسب المؤشر</button>
+
+<div class="result" id="result"></div>
+<div class="advice" id="advice"></div>
+
+</div>
+
+<script>
+let lang="ar";
+
+function toggleLang(){
+    lang = (lang==="ar")?"en":"ar";
+    document.documentElement.lang = lang;
+    updateText();
+}
+
+function updateText(){
+    if(lang==="ar"){
+        title.innerText="مؤشر النشاط اليومي";
+        desc.innerText="نستخدم الرياضيات لقياس صحتنا اليومية بطريقة ذكية اعتمادًا على العمر والنشاط.";
+        l_age.innerText="العمر (سنة)";
+        l_walk.innerText="المشي اليومي (بالمتر)";
+        l_water.innerText="عدد أكواب الماء";
+        l_sleep.innerText="عدد ساعات النوم";
+        calcBtn.innerText="احسب المؤشر";
+    }else{
+        title.innerText="Daily Activity Index";
+        desc.innerText="Using math to measure daily health based on age and activity.";
+        l_age.innerText="Age (years)";
+        l_walk.innerText="Walking distance (meters)";
+        l_water.innerText="Cups of water";
+        l_sleep.innerText="Hours of sleep";
+        calcBtn.innerText="Calculate Index";
+    }
+}
+
+function calculate(){
+    let age=Number(ageInput.value||age.value);
+    let walk=Number(walkInput?.value||walk.value);
+    let water=Number(waterInput?.value||water.value);
+    let sleep=Number(sleepInput?.value||sleep.value);
+
+    /* أهداف ذكية حسب العمر */
+    let walkTarget = age<=12 ? 5000 : age<=18 ? 7000 : 6000;
+    let waterTarget = age<=12 ? 6 : 8;
+    let sleepTarget = age<=12 ? 9 : 8;
+
+    if(walk>walkTarget) walk=walkTarget;
+    if(water>waterTarget) water=waterTarget;
+    if(sleep>sleepTarget) sleep=sleepTarget;
+
+    let score =
+        (walk/walkTarget)*50 +
+        (water/waterTarget)*30 +
+        (sleep/sleepTarget)*20;
+
+    let status,color;
+    if(walk===0){ status= lang==="ar"?"ضعيف جدًا":"Very Weak"; color="#e74c3c";}
+    else if(score<50){ status= lang==="ar"?"ضعيف":"Weak"; color="#e74c3c";}
+    else if(score<80){ status= lang==="ar"?"جيد":"Good"; color="#f1c40f";}
+    else{ status= lang==="ar"?"ممتاز":"Excellent"; color="#2ecc71";}
+
+    result.style.display="block";
+    result.style.background=color;
+    result.innerHTML=
+        (lang==="ar"
+        ?`مؤشر صحتك: ${score.toFixed(1)}%<br>التصنيف: ${status}`
+        :`Your Health Index: ${score.toFixed(1)}%<br>Status: ${status}`);
+
+    let tips=[];
+    if(walk<walkTarget) tips.push(lang==="ar"?`زد المشي ${walkTarget-walk} متر`:`Walk ${walkTarget-walk} more meters`);
+    if(water<waterTarget) tips.push(lang==="ar"?`اشرب ${waterTarget-water} أكواب ماء إضافية`:`Drink ${waterTarget-water} more cups`);
+    if(sleep<sleepTarget) tips.push(lang==="ar"?`نم ${sleepTarget-sleep} ساعة إضافية`:`Sleep ${sleepTarget-sleep} more hours`);
+
+    advice.innerHTML = tips.length
+        ? (lang==="ar"?"نصائح للتحسن:<br>":"Tips to improve:<br>") + tips.join("<br>")
+        : (lang==="ar"?"أداء صحي ممتاز 👏":"Excellent healthy habits 👏");
+}
+</script>
+
+</body>
+</html>
