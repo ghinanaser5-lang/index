@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار انتقال المواد في الخلايا</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #0D9B7A;
+    --teal-light: #E0F5EF;
+    --teal-mid: #5DCAA5;
+    --teal-dark: #07503F;
+    --accent: #F5A623;
+    --accent-light: #FEF3DC;
+    --red: #E84040;
+    --red-light: #FDEAEA;
+    --bg: #F4FAF7;
+    --card: #FFFFFF;
+    --text: #1A2E26;
+    --muted: #6B8C7E;
+    --border: #C8E8DC;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Decorative background blobs */
+  body::before {
+    content: '';
+    position: fixed;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(13,155,122,0.10) 0%, transparent 70%);
+    top: -120px; left: -120px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(245,166,35,0.09) 0%, transparent 70%);
+    bottom: -100px; right: -100px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* TOP BADGE */
+  .top-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(13,155,122,0.2);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.03em;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem 1.75rem;
+    box-shadow: 0 4px 24px rgba(13,155,122,0.07);
+  }
+
+  /* WELCOME SCREEN */
+  .cell-icon {
+    width: 80px; height: 80px;
+    background: var(--teal-light);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.25rem;
+    font-size: 36px;
+    border: 2px solid rgba(13,155,122,0.2);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100%{ box-shadow: 0 0 0 0 rgba(13,155,122,0.2); }
+    50%{ box-shadow: 0 0 0 12px rgba(13,155,122,0); }
+  }
+
+  .welcome-title {
+    font-size: 24px; font-weight: 800;
+    color: var(--teal-dark);
+    text-align: center; margin-bottom: 6px;
+  }
+  .welcome-sub {
+    font-size: 14px; color: var(--muted);
+    text-align: center; margin-bottom: 1.75rem;
+    line-height: 1.7;
+  }
+
+  .info-chips {
+    display: flex; justify-content: center; gap: 10px;
+    flex-wrap: wrap; margin-bottom: 1.75rem;
+  }
+  .chip {
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    font-size: 12px; font-weight: 500;
+    padding: 5px 14px; border-radius: 999px;
+    border: 1px solid rgba(13,155,122,0.15);
+  }
+
+  .name-label {
+    font-size: 13px; font-weight: 700;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .name-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-family: 'Tajawal', sans-serif;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 1.25rem;
+    text-align: right;
+  }
+  .name-input:focus {
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(13,155,122,0.12);
+  }
+  .name-input.error { border-color: var(--red); }
+
+  .btn-start {
+    width: 100%;
+    padding: 14px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px; font-weight: 700;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.02em;
+  }
+  .btn-start:hover { background: var(--teal-dark); transform: translateY(-1px); }
+  .btn-start:active { transform: scale(0.98); }
+
+  .teacher-tag {
+    text-align: center;
+    margin-top: 1.25rem;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .teacher-tag span {
+    font-weight: 700; color: var(--teal-dark);
+  }
+
+  /* QUIZ HEADER */
+  .quiz-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .q-counter {
+    font-size: 13px; font-weight: 500; color: var(--muted);
+  }
+  .student-chip {
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    font-size: 12px; font-weight: 700;
+    padding: 4px 12px; border-radius: 999px;
+  }
+
+  /* PROGRESS */
+  .progress-wrap {
+    background: var(--teal-light);
+    border-radius: 999px;
+    height: 6px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 999px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* QUESTION */
+  .q-num {
+    display: inline-block;
+    background: var(--teal);
+    color: #fff;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .q-text {
+    font-size: 17px; font-weight: 700;
+    color: var(--text);
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+
+  /* OPTIONS */
+  .opt-btn {
+    display: flex; align-items: center; gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px; font-weight: 500;
+    text-align: right;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+    flex-direction: row-reverse;
+  }
+  .opt-btn:hover:not(:disabled) {
+    border-color: var(--teal);
+    background: var(--teal-light);
+    transform: translateX(-2px);
+  }
+  .opt-btn:disabled { cursor: default; }
+  .opt-btn.correct {
+    background: var(--teal-light);
+    border-color: var(--teal);
+    color: var(--teal-dark);
+  }
+  .opt-btn.wrong {
+    background: var(--red-light);
+    border-color: var(--red);
+    color: var(--red);
+  }
+  .opt-letter {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--muted);
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+  }
+  .opt-btn.correct .opt-letter { background: var(--teal); color: #fff; }
+  .opt-btn.wrong .opt-letter { background: var(--red); color: #fff; }
+
+  /* FEEDBACK */
+  .feedback-box {
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 13px; line-height: 1.6;
+    margin: 4px 0 1rem;
+    display: none;
+  }
+  .feedback-box.correct {
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    border: 1px solid rgba(13,155,122,0.2);
+    display: block;
+  }
+  .feedback-box.wrong {
+    background: var(--red-light);
+    color: var(--red);
+    border: 1px solid rgba(232,64,64,0.2);
+    display: block;
+  }
+
+  /* NEXT BUTTON */
+  .btn-next {
+    width: 100%;
+    padding: 13px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px; font-weight: 700;
+    background: var(--teal);
+    color: #fff;
+    border: none; border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    display: none;
+    margin-top: 4px;
+  }
+  .btn-next.show { display: block; }
+  .btn-next:hover { background: var(--teal-dark); }
+  .btn-next:active { transform: scale(0.98); }
+
+  /* CERTIFICATE */
+  .cert-wrap { text-align: center; }
+  .cert-ribbon {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    border: 2px solid rgba(245,166,35,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px;
+    margin: 0 auto 1.25rem;
+    animation: pop 0.5s cubic-bezier(.3,1.4,.5,1);
+  }
+  @keyframes pop { from{ transform: scale(0.3); opacity:0; } to{ transform: scale(1); opacity:1; } }
+
+  .cert-header {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    color: var(--muted); margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .cert-title {
+    font-size: 22px; font-weight: 800;
+    color: var(--teal-dark); margin-bottom: 4px;
+  }
+  .cert-by { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .cert-name {
+    font-size: 30px; font-weight: 800;
+    color: var(--teal); margin: 4px 0 1.25rem;
+  }
+
+  .cert-divider {
+    border: none; border-top: 1.5px dashed var(--border);
+    margin: 1rem 0;
+  }
+
+  .score-row {
+    display: flex; justify-content: center;
+    gap: 14px; flex-wrap: wrap; margin-bottom: 1rem;
+  }
+  .score-chip {
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    border: 1px solid rgba(13,155,122,0.2);
+    font-size: 15px; font-weight: 800;
+    padding: 8px 20px; border-radius: 999px;
+  }
+  .grade-chip {
+    font-size: 15px; font-weight: 800;
+    padding: 8px 20px; border-radius: 999px;
+  }
+  .grade-excellent { background: var(--teal-light); color: var(--teal-dark); border: 1px solid rgba(13,155,122,0.2); }
+  .grade-good { background: #EBF5FF; color: #1A5FA8; border: 1px solid rgba(26,95,168,0.2); }
+  .grade-pass { background: var(--accent-light); color: #7A4D00; border: 1px solid rgba(245,166,35,0.3); }
+  .grade-fail { background: var(--red-light); color: var(--red); border: 1px solid rgba(232,64,64,0.2); }
+
+  .cert-meta {
+    font-size: 13px; color: var(--muted); line-height: 2;
+  }
+  .cert-meta strong { color: var(--teal-dark); font-weight: 700; }
+
+  .btn-retry {
+    margin-top: 1.25rem;
+    padding: 12px 36px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 14px; font-weight: 700;
+    background: transparent;
+    color: var(--teal);
+    border: 1.5px solid var(--teal);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-retry:hover { background: var(--teal-light); }
+
+  /* STARS */
+  .stars { font-size: 22px; letter-spacing: 4px; margin-bottom: 8px; }
+
+  /* FADE IN */
+  .fade-in { animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{ opacity:0; transform: translateY(10px); } to{ opacity:1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="top-badge">🔬 علم الأحياء — الخلية</div>
+  <div class="card fade-in" id="app"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "ما الجزء الخارجي الذي يحيط بالخلية ويتحكم في دخول المواد وخروجها؟",
+    opts: ["النواة", "الغشاء البلازمي", "الميتوكوندريا", "الفجوة العصارية"],
+    ans: 1,
+    exp: "الغشاء البلازمي هو الغلاف الخارجي للخلية الذي يتحكم فيما يدخل وما يخرج منها."
+  },
+  {
+    q: "ما اسم حركة المواد من المكان الأكثر تركيزاً إلى المكان الأقل تركيزاً؟",
+    opts: ["النقل النشط", "الانتشار", "الأسموزية", "الامتصاص"],
+    ans: 1,
+    exp: "الانتشار هو انتقال المواد من التركيز الأعلى إلى الأدنى بشكل طبيعي دون طاقة."
+  },
+  {
+    q: "عندما تضع قطعة سكر في الماء، ينتشر السكر في كل الكأس. ما اسم هذه الظاهرة؟",
+    opts: ["الأسموزية", "النقل النشط", "الانتشار", "الترشيح"],
+    ans: 2,
+    exp: "هذا مثال على الانتشار، حيث تنتقل جزيئات السكر من مكان تركيزها العالي إلى كل أنحاء الماء."
+  },
+  {
+    q: "ما اسم العملية الخاصة بانتقال الماء عبر الغشاء البلازمي؟",
+    opts: ["الانتشار", "النقل النشط", "الأسموزية", "الهضم"],
+    ans: 2,
+    exp: "الأسموزية هي الاسم الخاص لانتقال الماء عبر الأغشية من منطقة تركيز منخفض إلى عالٍ."
+  },
+  {
+    q: "هل يحتاج الانتشار إلى طاقة من الخلية؟",
+    opts: ["نعم، يحتاج طاقة كبيرة", "لا، يحدث بشكل طبيعي دون طاقة", "أحياناً فقط", "يحتاج طاقة شمسية"],
+    ans: 1,
+    exp: "الانتشار عملية سلبية تحدث تلقائياً دون أن تستهلك الخلية أي طاقة."
+  },
+  {
+    q: "إذا وضعنا خيارة في ماء مالح، ماذا يحدث لها؟",
+    opts: ["تنتفخ وتكبر", "تذبل وتتقلص", "لا يتغير شكلها", "تتحلل"],
+    ans: 1,
+    exp: "الماء يخرج من خلايا الخيارة إلى المحلول المالح بعملية الأسموزية فتذبل وتتقلص."
+  },
+  {
+    q: "أي من التالي مثال على انتقال مادة تحتاج فيه الخلية إلى طاقة؟",
+    opts: ["دخول الأكسجين للخلية", "خروج ثاني أكسيد الكربون", "ضخ الأملاح ضد تدرج تركيزها", "انتشار الماء"],
+    ans: 2,
+    exp: "ضخ الأملاح ضد تدرج التركيز هو النقل النشط الذي يحتاج طاقة من الخلية."
+  },
+  {
+    q: "كيف يدخل الأكسجين إلى خلايا جسمنا؟",
+    opts: ["عن طريق الفم فقط", "عبر الانتشار خلال الغشاء البلازمي", "بواسطة النقل النشط", "عن طريق الطعام"],
+    ans: 1,
+    exp: "ينتشر الأكسجين من الدم (تركيز عالٍ) إلى داخل الخلايا (تركيز منخفض) عبر الغشاء البلازمي."
+  }
+];
+
+const LETTERS = ["أ","ب","ج","د"];
+let name = "", current = 0, score = 0, answered = false;
+const app = document.getElementById("app");
+
+function showWelcome() {
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="cell-icon">🧬</div>
+      <h1 class="welcome-title">انتقال المواد في الخلايا</h1>
+      <p class="welcome-sub">اختبر معلوماتك عن آليات انتقال المواد والجزيئات عبر أغشية الخلايا</p>
+      <div class="info-chips">
+        <span class="chip">📝 ${questions.length} أسئلة</span>
+        <span class="chip">⚡ تصحيح فوري</span>
+        <span class="chip">🏅 شهادة في النهاية</span>
+      </div>
+      <p class="name-label">اسم الطالبة</p>
+      <input class="name-input" id="nameInput" type="text" placeholder="اكتبي اسمك هنا..." />
+      <button class="btn-start" onclick="startQuiz()">ابدأ الاختبار ←</button>
+      <p class="teacher-tag">إعداد المعلمة: <span>غنى ناصر</span></p>
+    </div>`;
+  document.getElementById("nameInput").addEventListener("keydown", e => { if(e.key==="Enter") startQuiz(); });
+}
+
+function startQuiz() {
+  const inp = document.getElementById("nameInput");
+  if (!inp.value.trim()) { inp.classList.add("error"); inp.focus(); return; }
+  name = inp.value.trim();
+  current = 0; score = 0; answered = false;
+  showQuestion();
+}
+
+function showQuestion() {
+  answered = false;
+  const q = questions[current];
+  const pct = Math.round((current / questions.length) * 100);
+  app.innerHTML = `
+    <div class="fade-in">
+      <div class="quiz-header">
+        <span class="q-counter">السؤال ${current+1} / ${questions.length}</span>
+        <span class="student-chip">${name}</span>
+      </div>
+      <div class="progress-wrap"><div class="progress-fill" id="pfill" style="width:${pct}%"></div></div>
+      <span class="q-num">س ${current+1}</span>
+      <p class="q-text">${q.q}</p>
+      ${q.opts.map((o,i)=>`
+        <button class="opt-btn" id="opt${i}" onclick="choose(${i})">
+          <span class="opt-letter">${LETTERS[i]}</span>
+          ${o}
+        </button>`).join("")}
+      <div class="feedback-box" id="feedback"></div>
+      <button class="btn-next" id="btnNext" onclick="nextQ()">
+        ${current+1 < questions.length ? "السؤال التالي ←" : "عرض النتيجة ←"}
+      </button>
+    </div>`;
+}
+
+function choose(idx) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  document.querySelectorAll(".opt-btn").forEach(b => b.disabled = true);
+  const fb = document.getElementById("feedback");
+  if (idx === q.ans) {
+    score++;
+    document.getElementById("opt"+idx).classList.add("correct");
+    fb.className = "feedback-box correct";
+    fb.innerHTML = "✓ إجابة صحيحة! &nbsp;—&nbsp; " + q.exp;
+  } else {
+    document.getElementById("opt"+idx).classList.add("wrong");
+    document.getElementById("opt"+q.ans).classList.add("correct");
+    fb.className = "feedback-box wrong";
+    fb.innerHTML = "✗ الإجابة الصحيحة: " + q.opts[q.ans] + " &nbsp;—&nbsp; " + q.exp;
+  }
+  document.getElementById("btnNext").classList.add("show");
+}
+
+function nextQ() {
+  current++;
+  if (current < questions.length) showQuestion();
+  else showCert();
+}
+
+function showCert() {
+  const pct = Math.round((score / questions.length) * 100);
+  let grade, gradeClass, stars;
+  if (pct >= 90) { grade="ممتاز 🌟"; gradeClass="grade-excellent"; stars="★★★★★"; }
+  else if (pct >= 75) { grade="جيد جداً"; gradeClass="grade-good"; stars="★★★★☆"; }
+  else if (pct >= 60) { grade="جيد"; gradeClass="grade-pass"; stars="★★★☆☆"; }
+  else { grade="يحتاج مراجعة"; gradeClass="grade-fail"; stars="★★☆☆☆"; }
+  const today = new Date().toLocaleDateString("ar-SA", {year:"numeric",month:"long",day:"numeric"});
+  app.innerHTML = `
+    <div class="cert-wrap fade-in">
+      <div class="cert-ribbon">🏅</div>
+      <p class="cert-header">شهادة إتمام</p>
+      <h2 class="cert-title">اختبار علم الأحياء</h2>
+      <p class="cert-by">انتقال المواد والجزيئات في الخلايا</p>
+      <hr class="cert-divider">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:4px">أتمّت الطالبة</p>
+      <div class="cert-name">${name}</div>
+      <div class="stars">${stars}</div>
+      <div class="score-row">
+        <span class="score-chip">${score} / ${questions.length} &nbsp;|&nbsp; ${pct}%</span>
+        <span class="grade-chip ${gradeClass}">${grade}</span>
+      </div>
+      <hr class="cert-divider">
+      <div class="cert-meta">
+        <div>التاريخ: <strong>${today}</strong></div>
+        <div>إعداد المعلمة: <strong>غنى ناصر</strong></div>
+      </div>
+      <br>
+      <button class="btn-retry" onclick="showWelcome()">إعادة الاختبار</button>
+    </div>`;
+}
+
+showWelcome();
+</script>
+</body>
+</html>
